@@ -27,11 +27,13 @@ static int simple_instruction(const char* name, int offset) {
 
 int disassemble_instruction(Chunk* chunk, int offset) {
 	printf("%04d ", offset);
+	int line = get_line(chunk, offset);
+	int prev_line = get_line(chunk, offset-1);
 
-	if (offset > 0 && chunk->lines[offset] == chunk->lines[offset-1]) {
+	if (offset > 0 && line == prev_line) {
 		printf("   | ");
 	} else {
-		printf("%4d ", chunk->lines[offset]);
+		printf("%4d ", line);
 	}
 
 
