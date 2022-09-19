@@ -58,6 +58,7 @@ int get_line(Chunk* chunk, int index) {
 }
 
 int add_constant(Chunk* chunk, Value value) {
+    // returns address to value in constants array
     write_value_array(&chunk->constants, value);
     return chunk->constants.count - 1;
 }
