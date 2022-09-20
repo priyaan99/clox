@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -pedantic -std=c99
-OBJS=main.o chunk.o memory.o debug.o value.o vm.o
+OBJS=main.o chunk.o memory.o debug.o value.o vm.o compiler.o scanner.o
 NAME=clox
 
 clox: $(OBJS)
@@ -21,7 +21,13 @@ debug.o: debug.c debug.h chunk.h value.h
 value.o: value.c value.h memory.h common.h
 	$(CC) -c $< $(CFLAGS)
 
-vm.o: vm.c vm.h common.h chunk.h
+vm.o: vm.c vm.h common.h chunk.h compiler.h debug.h
+	$(CC) -c $< $(CFLAGS)
+
+compiler.o: compiler.c compiler.h common.h scanner.h
+	$(CC) -c $< $(CFLAGS)
+
+scanner.o: scanner.c scanner.h common.h
 	$(CC) -c $< $(CFLAGS)
 
 clean:
