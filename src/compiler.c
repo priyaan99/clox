@@ -99,7 +99,6 @@ static void end_compiler() {
 }
 
 /// Expression Parsing ///
-
 static void number() {
 	double value = strtod(parser.previous.start, NULL);
 	emit_constant(value);
