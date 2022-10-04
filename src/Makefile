@@ -9,10 +9,10 @@ clox: $(OBJS)
 main.o: main.c common.h chunk.h debug.h vm.h
 	$(CC) -c $< $(CFLAGS)
  
-chunk.o: chunk.c chunk.h memory.h value.h
+chunk.o: chunk.c chunk.h memory.h value.h common.h
 	$(CC) -c $< $(CFLAGS)
 
-memory.o: memory.c memory.h
+memory.o: memory.c memory.h common.h
 	$(CC) -c $< $(CFLAGS)
 
 debug.o: debug.c debug.h chunk.h value.h
@@ -24,7 +24,7 @@ value.o: value.c value.h memory.h common.h
 vm.o: vm.c vm.h common.h chunk.h compiler.h debug.h
 	$(CC) -c $< $(CFLAGS)
 
-compiler.o: compiler.c compiler.h common.h scanner.h
+compiler.o: compiler.c compiler.h common.h scanner.h debug.h
 	$(CC) -c $< $(CFLAGS)
 
 scanner.o: scanner.c scanner.h common.h
