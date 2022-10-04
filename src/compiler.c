@@ -12,6 +12,20 @@ typedef struct {
 	bool panic_mode;
 } Parser;
 
+typedef enum {
+	PREC_NONE,
+	PREC_ASSIGNMENT,  // =
+	PREC_OR,          // or
+	PREC_AND,         // and
+	PREC_EQUALITY,    // == !=
+	PREC_COMPARISON,  // < > <= >=
+	PREC_TERM,        // + -
+	PREC_FACTOR,      // * /
+	PREC_UNARY,       // ! -
+	PREC_CALL,        // . ()
+	PREC_PRIMARY,
+} Precedence;
+
 Parser parser;
 
 Chunk* compiling_chunk;
@@ -20,6 +34,7 @@ static Chunk* current_chunk() {
 	return compiling_chunk;
 }
 
+/// ***** Error Handling ***** /// 
 static void error_at(Token* token, const char* message) {
 	if (parser.panic_mode) return;
 	parser.panic_mode = true;
@@ -46,6 +61,7 @@ static void error_at_current(const char* message) {
 	error_at(&parser.previous, message);
 }
 
+/// ***** Helper Function ***** ///
 static void advance() {
 	parser.previous = parser.current;
 
@@ -67,6 +83,7 @@ static void consume(TokenType type, const char* message) {
 	error_at_current(message);
 }
 
+/// ***** Emit Byte ***** ///
 static void emit_byte(uint8_t byte) {
 	write_chunk(current_chunk(), byte, parser.previous.line);
 }
@@ -98,13 +115,54 @@ static void end_compiler() {
 	emit_return();
 }
 
-/// Expression Parsing ///
+/// ***** Expression Parsing ***** ///
+
+static void expression();
+static void parse_precedence(Precedence precedence);
+
+static void binary() {
+	TokenType operator_type = parser.previous.type;
+	ParseRule* rule = get_rule(operator_type);
+	parse_precedence((Precedence)(rule->precedence +1));
+
+	switch (operator_type) {
+		case TOKEN_PLUS:	emit_byte(OP_ADD); break;
+		case TOKEN_MINUS:	emit_byte(OP_SUBTRACT); break;
+		case TOKEN_STAR:	emit_byte(OP_MULTIPLY); break;
+		case TOKEN_SLASH:	emit_byte(OP_DIVIDE); break;
+		default: return;
+	}
+}
+
+static void grouping() {
+	expression();
+	consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression");
+}
+
 static void number() {
 	double value = strtod(parser.previous.start, NULL);
 	emit_constant(value);
 }
 
+static void unary() {
+	TokenType operator_type = parser.previous.type;
+
+	// Compile The Oprend
+	parse_precedence(PREC_UNARY);
+
+	// emit operator instruction
+	switch (operator_type) {
+		case OP_NEGATE: emit_byte(OP_NEGATE); break;
+		default: return; // Unreachable
+	}
+}
+
+static void parse_precedence(Precedence precedence) {
+	// todo
+}
+
 static void expression() {
+	parse_precedence(PREC_ASSIGNMENT);
 }
 
 bool compile(const char* source, Chunk* chunk) {
