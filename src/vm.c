@@ -50,6 +50,7 @@ static bool is_falsey(Value value) {
 	return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
+
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
@@ -108,6 +109,7 @@ static InterpretResult run() {
 					return INTERPRET_RUNTIME_ERROR;
 				}
 				push(NUMBER_VAL(-AS_NUMBER(pop())));
+                break;
 			case OP_RETURN: {
 				return INTERPRET_OK;
 			}
