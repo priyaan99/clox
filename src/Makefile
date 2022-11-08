@@ -12,7 +12,7 @@ main.o: main.c common.h chunk.h debug.h vm.h
 chunk.o: chunk.c chunk.h memory.h value.h common.h
 	$(CC) -c $< $(CFLAGS)
 
-memory.o: memory.c memory.h common.h
+memory.o: memory.c memory.h common.h object.h vm.h
 	$(CC) -c $< $(CFLAGS)
 
 debug.o: debug.c debug.h chunk.h value.h
