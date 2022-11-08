@@ -18,13 +18,13 @@ memory.o: memory.c memory.h common.h
 debug.o: debug.c debug.h chunk.h value.h
 	$(CC) -c $< $(CFLAGS)
 
-value.o: value.c value.h memory.h common.h
+value.o: value.c value.h object.h memory.h value.h common.h 
 	$(CC) -c $< $(CFLAGS)
 
-vm.o: vm.c vm.h common.h chunk.h compiler.h debug.h
+vm.o: vm.c vm.h chunk.h common.h compiler.h debug.h object.h memory.h
 	$(CC) -c $< $(CFLAGS)
 
-compiler.o: compiler.c compiler.h common.h scanner.h debug.h object.h
+compiler.o: compiler.c compiler.h chunk.h common.h scanner.h debug.h object.h
 	$(CC) -c $< $(CFLAGS)
 
 scanner.o: scanner.c scanner.h common.h
