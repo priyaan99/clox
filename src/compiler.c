@@ -148,6 +148,19 @@ static void declaration();
 static ParseRule* get_rule(TokenType type); 
 static void parse_precedence(Precedence precedence);
 
+static uint8_t identifier_constant(Token* name) {
+	return make_constant(OBJ_VAL(copy_string(name->start, name->length)));
+}
+
+static uint8_t parse_variable(const char* error_message) {
+	consume(TOKEN_IDENTIFIER, error_message);
+	return identifier_constant(&parser.previous);
+}
+
+static void define_variable(uint8_t global) {
+	emit_bytes(OP_DEFINE_GLOBAL, global);
+}
+
 /// ***** Expression Parsing ***** ///
 
 static void binary() {
@@ -195,6 +208,15 @@ static void string() {
 					parser.previous.length-2)));
 }
 
+static void named_variable(Token name) {
+	uint8_t arg = identifier_constant(&name);
+	emit_bytes(OP_GET_GLOBAL, arg);
+}
+
+static void variable() {
+	named_variable(parser.previous);
+}
+
 static void unary() {
 	TokenType operator_type = parser.previous.type;
 
@@ -221,7 +243,7 @@ ParseRule rules[] = {
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_BANG]          = {unary,     NULL,  PREC_NONE},
+  [TOKEN_BANG]          = {unary,    NULL,  PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
   [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EQUAL_EQUAL]   = {NULL,     binary, PREC_EQUALITY},
@@ -229,23 +251,23 @@ ParseRule rules[] = {
   [TOKEN_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISON},
   [TOKEN_LESS]          = {NULL,     binary, PREC_COMPARISON},
   [TOKEN_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISON},
-  [TOKEN_IDENTIFIER]    = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
   [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
   [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
   [TOKEN_AND]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_FALSE]         = {literal,     NULL,   PREC_NONE},
+  [TOKEN_FALSE]         = {literal,  NULL,   PREC_NONE},
   [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_NIL]           = {literal,     NULL,   PREC_NONE},
+  [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
   [TOKEN_OR]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SUPER]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_THIS]          = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_TRUE]          = {literal,     NULL,   PREC_NONE},
+  [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
@@ -268,19 +290,6 @@ static void parse_precedence(Precedence precedence) {
 		ParseFn infix_rule = get_rule(parser.previous.type)->infix;
 		infix_rule();
 	}
-}
-
-static uint8_t identifier_constant(Token* name) {
-	return make_constant(OBJ_VAL(copy_string(name->start, name->length)));
-}
-
-static uint8_t parse_variable(const char* error_message) {
-	consume(TOKEN_IDENTIFIER, error_message);
-	return identifier_constant(&parser.previous);
-}
-
-static void define_variable(uint8_t global) {
-	emit_bytes(OP_DEFINE_GLOBAL, global);
 }
 
 static ParseRule* get_rule(TokenType type) {
