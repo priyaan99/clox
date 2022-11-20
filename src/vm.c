@@ -117,16 +117,25 @@ static InterpretResult run() {
 				ObjString* name = READ_STRING();
 				Value value;
 				if (!table_get(&vm.globals, name, &value)) {
-					runtime_error("Undifined variable '%s'", name->chars);
+					runtime_error("Undifined var '%s'.", name->chars);
 					return INTERPRET_RUNTIME_ERROR;
 				}
 				push(value);
 				break;
-			}
+			} 
 			case OP_DEFINE_GLOBAL: {
 				ObjString* name = READ_STRING();
 				table_set(&vm.globals, name, peek(0));
 				pop();
+				break;
+			}
+			case OP_SET_GLOBAL: {
+				ObjString* name = READ_STRING();
+				if (table_set(&vm.globals, name, peek(0))) {
+					table_delete(&vm.globals, name);
+					runtime_error("Undefined Variable '%s'.", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
 				break;
 			}
 			case OP_EQUAL: {
