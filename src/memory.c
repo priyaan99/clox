@@ -1,6 +1,8 @@
 #include <stdlib.h>
 
+#include "chunk.h"
 #include "memory.h"
+#include "object.h"
 #include "vm.h"
 
 void* reallocate(void* pointer, size_t old_size, size_t new_size) {
@@ -20,6 +22,13 @@ static void free_object(Obj* object) {
 			ObjString* string = (ObjString*)object;
 			FREE_ARRAY(char, string->chars, string->length + 1);
 			FREE(ObjString, object);
+			break;
+		}
+		case OBJ_FUNCTION: {
+			// cast Obj to ObjFunction as obj and obj function have pointer pointing to same location
+			ObjFunction* function = (ObjFunction*)object;
+			free_chunk(&function->chunk);
+			FREE(ObjFunction, object);
 			break;
 		}
 	}
